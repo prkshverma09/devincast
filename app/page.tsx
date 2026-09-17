@@ -3,13 +3,23 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAgent } from "agents/react";
 import type { BroadcastAgent, BroadcastClip, BroadcastState, Segment } from "../worker";
-import { MOCK_EVENTS } from "./mockEvents";
+import { SESSION, SESSION_STEPS, type LineKind } from "./session";
 
 const BAR_COUNT = 48;
 const MIN_GAP_MS = 10_000;
 const MAX_GAP_MS = 15_000;
 
-type TerminalLine = { id: string; text: string; at: number };
+type TerminalLine = { id: string; kind: LineKind; text: string; at: number };
+
+const PREFIX: Partial<Record<LineKind, string>> = {
+  cmd: "$",
+  plan: "◆",
+  thought: "·",
+  ok: "✓",
+  warn: "!",
+  err: "✕",
+  file: "✎"
+};
 
 const clock = (at: number) =>
   new Date(at).toLocaleTimeString("en-US", { hour12: false });
@@ -17,6 +27,7 @@ const clock = (at: number) =>
 export default function Page() {
   const [live, setLive] = useState(false);
   const [lines, setLines] = useState<TerminalLine[]>([]);
+  const [working, setWorking] = useState(false);
   const [segments, setSegments] = useState<Segment[]>([]);
   const [nowPlaying, setNowPlaying] = useState<Segment | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +39,8 @@ export default function Page() {
   const analyser = useRef<AnalyserNode | null>(null);
   const terminalEnd = useRef<HTMLDivElement | null>(null);
   const broadcastEnd = useRef<HTMLDivElement | null>(null);
-  const eventIndex = useRef(0);
+  const stepIndex = useRef(0);
+  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const playNext = useCallback(async () => {
     if (playing.current) return;
@@ -116,21 +128,43 @@ export default function Page() {
     if (!live) return;
     let timer: ReturnType<typeof setTimeout>;
     const fire = async () => {
-      const text = MOCK_EVENTS[eventIndex.current % MOCK_EVENTS.length];
-      eventIndex.current += 1;
-      setLines((prev) => [
-        ...prev,
-        { id: crypto.randomUUID(), text, at: Date.now() }
-      ]);
+      const step = SESSION_STEPS[stepIndex.current % SESSION_STEPS.length];
+      stepIndex.current += 1;
+
+      // Stream the step's output line by line, the way a real session scrolls.
+      setWorking(true);
+      let offset = 0;
+      step.lines.forEach((line) => {
+        offset += line.delay ?? 180;
+        timers.current.push(
+          setTimeout(() => {
+            setLines((prev) => [
+              ...prev,
+              {
+                id: crypto.randomUUID(),
+                kind: line.kind,
+                text: line.text,
+                at: Date.now()
+              }
+            ]);
+          }, offset)
+        );
+      });
+      timers.current.push(setTimeout(() => setWorking(false), offset));
+
       try {
-        await agent.stub.processEvent(text);
+        await agent.stub.processEvent(step.summary);
       } catch (e) {
         setError(String(e));
       }
       timer = setTimeout(fire, MIN_GAP_MS + Math.random() * (MAX_GAP_MS - MIN_GAP_MS));
     };
     timer = setTimeout(fire, 1_000);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      timers.current.forEach(clearTimeout);
+      timers.current = [];
+    };
   }, [live, agent]);
 
   useEffect(() => {
@@ -173,22 +207,40 @@ export default function Page() {
         <section className="pane">
           <div className="pane-head">
             <span className="pane-title">THE PITCH</span>
-            <span className="pane-sub">simulated coding session</span>
+            <span className="pane-sub">agent session · {SESSION.machine}</span>
+          </div>
+          <div className="session-bar">
+            <div className="session-task">
+              <span className={`spinner${working ? "" : " idle"}`} />
+              {SESSION.task}
+            </div>
+            <div className="session-meta">
+              <span className="chip">{SESSION.repo}</span>
+              <span className="chip branch">⎇ {SESSION.branch}</span>
+              <span className="chip">
+                step {Math.min(stepIndex.current, SESSION_STEPS.length)}/{SESSION_STEPS.length}
+              </span>
+            </div>
           </div>
           <div className="scroll">
             {lines.length === 0 && (
-              <div className="line" style={{ color: "var(--dim)" }}>
-                waiting for the developer to do something regrettable...
+              <div className="line dim">
+                waiting for the agent to do something regrettable...
               </div>
             )}
             {lines.map((line) => (
-              <div className="line" key={line.id}>
+              <div className={`line k-${line.kind}`} key={line.id}>
                 <span className="ts">{clock(line.at)}</span>
-                <span className="prompt">$</span> {line.text}
+                {PREFIX[line.kind] && (
+                  <span className="sigil">{PREFIX[line.kind]}</span>
+                )}
+                <span className="body">{line.text}</span>
               </div>
             ))}
             <div className="line">
-              <span className="prompt">$</span> <span className="cursor" />
+              <span className="ts" />
+              <span className="sigil prompt">$</span>
+              <span className="cursor" />
             </div>
             <div ref={terminalEnd} />
           </div>

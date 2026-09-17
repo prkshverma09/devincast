@@ -30,8 +30,9 @@ One Worker serves both the static frontend (`assets` binding) and the agent, so
 ## Frontend — `app/`
 
 - Dark split-screen UI, Next.js App Router with `output: "export"`.
-- **The Pitch**: a fake terminal that pushes a mock coding event
-  (`app/mockEvents.ts`) to the agent every 10-15s via `agent.stub.processEvent(...)`.
+- **The Pitch**: a simulated cloud coding agent session (`app/session.ts`) — plan steps,
+  shell commands with streamed stdout/stderr, diffs and git output. Every 10-15s the next
+  step runs and its one-line summary goes to the agent via `agent.stub.processEvent(...)`.
 - **The Broadcast**: `useAgent` from `agents/react`; incoming clips are queued and
   auto-played in order, with a WebAudio-driven retro bar visualizer.
 - Browsers block autoplay until a gesture, so the show starts with the **GO LIVE** button.

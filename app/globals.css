@@ -116,19 +116,149 @@ body {
   padding: 16px 18px;
 }
 
-.line {
-  white-space: pre-wrap;
-  line-height: 1.6;
-  font-size: 13px;
+.session-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 18px;
+  border-bottom: 1px solid var(--line);
+  background: #0a0e14;
 }
 
+.session-task {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+  color: #cdd9e5;
+}
+
+.session-meta {
+  display: flex;
+  gap: 6px;
+}
+
+.chip {
+  padding: 2px 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 10px;
+  color: var(--dim);
+  white-space: nowrap;
+}
+
+.chip.branch {
+  color: #a78bfa;
+  border-color: #35305a;
+}
+
+.spinner {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 2px solid #234;
+  border-top-color: var(--green);
+  animation: spin 0.9s linear infinite;
+}
+
+.spinner.idle {
+  border-top-color: var(--dim);
+  animation: none;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.line {
+  display: flex;
+  gap: 8px;
+  line-height: 1.55;
+  font-size: 12.5px;
+  padding: 1px 0;
+}
+
+.line .body {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.line .ts {
+  color: #3f4c5a;
+  flex: none;
+  width: 62px;
+}
+
+.line .sigil {
+  flex: none;
+  width: 10px;
+  text-align: center;
+  color: var(--dim);
+}
+
+.line.dim {
+  color: var(--dim);
+}
+
+.k-cmd {
+  color: #e6edf3;
+}
+
+.k-cmd .sigil,
 .line .prompt {
   color: var(--green);
 }
 
-.line .ts {
-  color: var(--dim);
-  margin-right: 8px;
+.k-out .body {
+  color: #8b98a5;
+}
+
+.k-err .body,
+.k-err .sigil {
+  color: #f87171;
+}
+
+.k-warn .body,
+.k-warn .sigil {
+  color: var(--amber);
+}
+
+.k-ok .body,
+.k-ok .sigil {
+  color: var(--green);
+}
+
+.k-plan {
+  margin-top: 10px;
+}
+
+.k-plan .body,
+.k-plan .sigil {
+  color: #a78bfa;
+  font-weight: 600;
+}
+
+.k-thought .body {
+  color: #6ea8fe;
+  font-style: italic;
+}
+
+.k-file .body,
+.k-file .sigil {
+  color: var(--cyan);
+}
+
+.k-add .body {
+  color: #7ee787;
+  background: rgba(46, 160, 67, 0.12);
+}
+
+.k-del .body {
+  color: #ff9492;
+  background: rgba(248, 81, 73, 0.12);
 }
 
 .cursor {
