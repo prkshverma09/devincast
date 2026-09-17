@@ -22,7 +22,8 @@ export async function synthesize(
         text,
         model_id: env.ELEVENLABS_MODEL_ID ?? "eleven_flash_v2_5",
         voice_settings: { stability: 0.35, similarity_boost: 0.75, style: 0.6 }
-      })
+      }),
+      signal: AbortSignal.timeout(30_000)
     }
   );
 

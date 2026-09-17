@@ -1,9 +1,3 @@
-/**
- * A scripted "cloud coding agent" session: each step is what the agent does,
- * rendered as plan lines, shell commands, streamed output and diffs. `summary`
- * is the single line handed to the BroadcastAgent for commentary.
- */
-
 export type LineKind =
   | "plan"
   | "thought"
@@ -19,7 +13,7 @@ export type LineKind =
 export type SessionLine = { kind: LineKind; text: string; delay?: number };
 
 export type SessionStep = {
-  summary: string;
+  title: string;
   lines: SessionLine[];
 };
 
@@ -32,9 +26,9 @@ export const SESSION = {
 
 export const SESSION_STEPS: SessionStep[] = [
   {
-    summary: "Agent started the task: writing a regex to parse the changelog",
+    title: "Writing the changelog regex",
     lines: [
-      { kind: "plan", text: "Plan 1/6 — Read CHANGELOG.md and work out the format" },
+      { kind: "plan", text: "Read CHANGELOG.md and work out the format" },
       { kind: "cmd", text: "cat CHANGELOG.md | head -40" },
       { kind: "out", text: "## [2.4.0] - 2026-08-14", delay: 300 },
       { kind: "out", text: "### Added", delay: 80 },
@@ -46,7 +40,7 @@ export const SESSION_STEPS: SessionStep[] = [
     ]
   },
   {
-    summary: "The regex failed: it matched the entire file, including the license",
+    title: "The changelog test fails",
     lines: [
       { kind: "cmd", text: "npm test -- changelog" },
       { kind: "out", text: "● parses 2.4.0 release header", delay: 400 },
@@ -57,7 +51,7 @@ export const SESSION_STEPS: SessionStep[] = [
     ]
   },
   {
-    summary: "Agent is googling how to exit vim after opening the merge editor",
+    title: "Exiting vim and finishing the rebase",
     lines: [
       { kind: "cmd", text: "git rebase origin/main" },
       { kind: "out", text: "hint: Waiting for your editor to close the file...", delay: 300 },
@@ -69,9 +63,9 @@ export const SESSION_STEPS: SessionStep[] = [
     ]
   },
   {
-    summary: "npm run build failed with 147 TypeScript errors",
+    title: "Build fails with 147 TypeScript errors",
     lines: [
-      { kind: "plan", text: "Plan 4/6 — Build before opening the PR" },
+      { kind: "plan", text: "Build before opening the PR" },
       { kind: "cmd", text: "npm run build" },
       { kind: "out", text: "▲ Next.js 15.5.25 — creating an optimized production build...", delay: 400 },
       { kind: "err", text: "src/changelog.ts(31,9): error TS2345: Argument of type 'RegExpMatchArray | null'", delay: 500 },
@@ -81,7 +75,7 @@ export const SESSION_STEPS: SessionStep[] = [
     ]
   },
   {
-    summary: "Agent commented out the failing test and called it a fix",
+    title: "Weakening the test assertion",
     lines: [
       { kind: "file", text: "edit src/changelog.test.ts" },
       { kind: "del", text: "- expect(releases).toHaveLength(12);" },
@@ -93,7 +87,7 @@ export const SESSION_STEPS: SessionStep[] = [
     ]
   },
   {
-    summary: "Agent force-pushed straight to main",
+    title: "Force-pushing to main",
     lines: [
       { kind: "cmd", text: "git push --force origin HEAD:main" },
       { kind: "out", text: "Enumerating objects: 41, done.", delay: 300 },
@@ -103,7 +97,7 @@ export const SESSION_STEPS: SessionStep[] = [
     ]
   },
   {
-    summary: "Agent deleted node_modules and reinstalled, the ancient ritual",
+    title: "Reinstalling dependencies",
     lines: [
       { kind: "err", text: "Error: Cannot find module 'changelog-parser/dist/index.js'" },
       { kind: "cmd", text: "rm -rf node_modules package-lock.json && npm install" },
@@ -113,9 +107,9 @@ export const SESSION_STEPS: SessionStep[] = [
     ]
   },
   {
-    summary: "Agent shipped to prod with the classic: it works on my machine",
+    title: "Deploying and receiving an incident alert",
     lines: [
-      { kind: "plan", text: "Plan 6/6 — Deploy" },
+      { kind: "plan", text: "Deploy" },
       { kind: "cmd", text: "npx wrangler deploy" },
       { kind: "out", text: "Total Upload: 2336.09 KiB / gzip: 428.31 KiB", delay: 400 },
       { kind: "ok", text: "Deployed devincast triggers (1.22 sec)" },
