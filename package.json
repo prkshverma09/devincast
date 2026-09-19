@@ -10,6 +10,7 @@
     "start": "wrangler dev",
     "deploy": "npm run build && wrangler deploy",
     "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types --test scripts/*.test.mjs",
     "cf-typegen": "wrangler types"
   },
   "license": "MIT",

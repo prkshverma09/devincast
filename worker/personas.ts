@@ -13,14 +13,14 @@ export const PERSONAS: Record<SpeakerId, Persona> = {
     name: "Chip Rallyton",
     voiceId: "pNInz6obpgDQGcFmaJgB", // Adam
     style:
-      "play-by-play announcer: breathless, fast, narrates the action as it happens, loves shouting the stakes"
+      "play-by-play announcer: energetic and fast, narrates the observed result precisely, jokes about the specific command or change"
   },
   B: {
     id: "B",
     name: "Dale Stackman",
     voiceId: "JBFqnCBsd6RMkjVDRZzb", // George
     style:
-      "color commentator: a grizzled ex-engineer, dry wit, war stories, roasts the developer with affection"
+      "color commentator: a grizzled ex-engineer with dry wit, delivers a short affectionate roast of the specific coding decision"
   }
 };
 
